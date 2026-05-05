@@ -28,9 +28,22 @@ jobs:
         ./scripts/feeds update -a
         ./scripts/feeds install -a
 
-    - name: Copy config
+    # ⭐ 自定义系统名称（重点）
+    - name: Custom system name
       run: |
-        cp .config source/.config
+        cd source
+        sed -i "s/hostname='OpenWrt'/hostname='BT-R320-Pro'/g" package/base-files/files/bin/config_generate || true
+        sed -i "s/OpenWrt/BT-R320-Pro/g" package/base-files/files/etc/banner || true
+        echo "DISTRIB_DESCRIPTION='BT-R320-Pro Build $(date +%Y.%m.%d)'" > package/base-files/files/etc/openwrt_release
+
+    - name: Load config
+      run: |
+        if [ -f .config ]; then
+          cp .config source/.config
+        else
+          cd source
+          cp defconfig/mt7981-ax3000.config .config
+        fi
         cd source
         make defconfig
 
